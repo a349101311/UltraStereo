@@ -1,3 +1,8 @@
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -51,6 +56,7 @@ public class Main {
     		}
     		curDep++;
     	}
+    	System.out.println("树构造完毕");
     }//buildCompleteTree
     
     public void printTreeLineByLine(BinaryNode root) {
@@ -99,6 +105,7 @@ public class Main {
     		//System.out.println(" " + theta);
     		ret[j] = new Parameters(x,theta);
     	}
+    	System.out.println("总共的随机向量z以及theta产生完毕");
     	return ret;
     }
     
@@ -116,15 +123,18 @@ public class Main {
 	    		int randx = rand.nextInt(numOfRandZ);
 	    		//System.out.println(randx);
 	    		candidate[j] = sample[randx]; 
+	    	}
+	    	System.out.println("训练节点"+"i"+"候选z选择结束");
+
+	    	for(int j = 0 ; j < candidates ; j++) {
 	    		double tmp = computeI(input , candidate[j]);
 	    		if(max < tmp) {
 	    			index = j;
 	    			max = tmp;
 	    		}
 	    	}
-    	
 	    	list.add(candidate[index]);
-	    	
+	    	System.out.println("训练节点"+"i"+"结束");
     	}
     }
     
@@ -160,12 +170,18 @@ public class Main {
     			indexr++;
     		}
     	}
+    	System.out.print("统计结束  ");
     	double[][] covl = new Covariance(new Array2DRowRealMatrix(arrl).transpose()).getCovarianceMatrix().getData();
     	double[][] covr = new Covariance(new Array2DRowRealMatrix(arrr).transpose()).getCovarianceMatrix().getData();
-    	double[][] covs = new Covariance(new Array2DRowRealMatrix(input)).getCovarianceMatrix().getData();
+    	double[][] covs = new Covariance(new Array2DRowRealMatrix(input).transpose()).getCovarianceMatrix().getData();
+    	System.out.print("协方差计算结束  ");
+    	System.out.println(covs.length+","+covs[0].length);
     	double determinantOfCovl = determinant(covl);
+    	System.out.print("行列式1计算结束  ");
     	double determinantOfCovr = determinant(covr);
+    	System.out.print("行列式2计算结束  ");
     	double determinantOfS = determinant(covs);
+    	System.out.println("行列式计算结束");
     	return Math.log(determinantOfS) - Sl/input[0].length*Math.log(determinantOfCovl) - Sr/input[0].length*Math.log(determinantOfCovr);
 	}
    
@@ -207,11 +223,56 @@ public class Main {
             }  
         }  
         return result2;  
-    }  
-    public static void main(String[] args) {
-    	Main test = new Main();
-    	//Parameters[] sample = test.produceVectorZ(121, 310, 4);
-    	//test.buildCompleteTree(5,list);
-    	//test.printTreeLineByLine(root);
+    }
+    
+    public static List<String> readTxtFileIntoStringArrList(String filePath)
+    {
+        List<String> list = new ArrayList<String>();
+        try
+        {
+            File file = new File(filePath);
+            if (file.isFile() && file.exists())
+            { // 判断文件是否存在
+                InputStreamReader read = new InputStreamReader(
+                        new FileInputStream(file));// 考虑到编码格式
+                BufferedReader bufferedReader = new BufferedReader(read);
+                String lineTxt = null;
+
+                while ((lineTxt = bufferedReader.readLine()) != null)
+                {
+                    list.add(lineTxt);
+                }
+                bufferedReader.close();
+                read.close();
+            }
+            else
+            {
+                System.out.println("找不到指定的文件");
+            }
+        }
+        catch (Exception e)
+        {
+            System.out.println("读取文件内容出错");
+            e.printStackTrace();
+        }
+
+        return list;
+    }
+
+    public static void main(String[] args) throws IOException {
+    	Main main = new Main();
+    	List<String> list1 = main.readTxtFileIntoStringArrList("mat/1.txt");
+    	double[][] input = new double[121][100];
+    	for(int i = 0 ; i < input.length ; i++) {
+    		String[] arr = list1.get(i).split("\\s");
+     		for(int j = 0 ; j < arr.length ; j++) {
+    			input[i][j] = Double.parseDouble(arr[j]);
+    		}
+    	}
+    	System.out.println("训练图像块读取完毕");
+    	int depth = 1,W = 121,numOfRandZ = 310,candidates = 10,k = 4;
+    	Parameters[] sample = main.produceVectorZ(W, numOfRandZ, k);
+    	main.trainNode(input,numOfRandZ,candidates,sample,depth);
+    	main.buildCompleteTree(depth,list);
     }
 }
