@@ -17,27 +17,7 @@ import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.stat.correlation.Covariance;
  
 public class Main {
-	class Parameters{
-		double[] arr;
-		double theta;
-    	
-    	public Parameters(double[] arr , double theta) {
-    		this.arr = arr;
-    		this.theta = theta;
-    	}
-    }//Parameters
 	
-    class BinaryNode {
-        Parameters para;
-        BinaryNode left;
-        BinaryNode right;
- 
-        public BinaryNode(Parameters para) {
-            this.para = para;
-        }
-    }//BinaryNode
-    
-    
     private static BinaryNode root;//根节点,这个属性很重要
     private static List<Parameters> list;
     private static List<Integer> listNum;
@@ -232,42 +212,6 @@ public class Main {
 		
 		return exChange * p[n - 1][n - 1] * GetLineTran(p, (n - 1));
     }
-    static double determinant(double[][] a){  
-        double result2 = 0;  
-        if(a.length>2){  
-         //每次选择第一行展开  
-            for(int i=0;i<a[0].length;i++){  
-                //系数符号  
-                double f=Math.pow(-1,i);  
-                //求余子式  
-                double[][] yuzs=new double[a.length-1][a[0].length-1];  
-                for (int j = 0; j < yuzs.length; j++) {  
-                    for (int j2 = 0; j2 < yuzs[0].length; j2++) {  
-                        //去掉第一行，第i列之后的行列式即为余子式  
-                        if(j2<i){  
-                            yuzs[j][j2]=a[j+1][j2];  
-                        }else {  
-                            yuzs[j][j2]=a[j+1][j2+1];  
-                        }  
-                          
-                    }  
-                }   
-                //行列式的拉普拉斯展开式，递归计算  
-                result2+=a[0][i]*determinant(yuzs)*f;  
-            }  
-        }  
-        else{  
-            //两行两列的行列式使用公式  
-            if(a.length==2){  
-                result2=a[0][0]*a[1][1]-a[0][1]*a[1][0];  
-            }  
-            //单行行列式的值即为本身  
-            else{  
-                result2=a[0][0];  
-            }  
-        }  
-        return result2;  
-    }
     
     public static List<String> readTxtFileIntoStringArrList(String filePath)
     {
@@ -302,7 +246,7 @@ public class Main {
 
         return list;
     }
-    public int[] Test(double[] x , int depth) {
+    public static int[] Test(double[] x , int depth) {
     	int[] y = new int[(1 << depth) - 1];
     	int i = 1;
     	RealMatrix input = new Array2DRowRealMatrix(x);
@@ -395,11 +339,37 @@ public class Main {
     		}
     	}
     	System.out.println("训练图像块读取完毕");
-    	int depth = 5,W = 121,numOfRandZ = 310,candidates = 10,k = 4;
+    	int depth = 6,W = 121,numOfRandZ = 310,candidates = 10,k = 4;
     	Parameters[] sample = main.produceVectorZ(W, numOfRandZ, k);
     	main.trainNode(input,numOfRandZ,candidates,sample,depth);
     	main.buildCompleteTree(depth,list);
-    	
+    	StringBuilder sbN = new StringBuilder();
+    	StringBuilder sbTheta = new StringBuilder();
+    	for(int j = 0 ; j < list.size() ; j++) {
+    		double[] tmp = list.get(j).arr;
+    		sbTheta.append(list.get(j).theta);
+    		if(j == list.size() - 1)
+    			sbTheta.append("\n");
+    		else
+    			sbTheta.append(" ");
+    		for(int i = 0 ; i < W - 1 ; i++) {
+    			sbN.append(tmp[i] + " ");
+    		}
+    		sbN.append(tmp[W - 1] + "\n");
+    	}
+    	if(main.writeStringToFile("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbTheta" + depth + ".txt", sbTheta.toString(), null)) {
+    		System.out.println("存取Theta成功");
+    	}
+    	else {
+    		System.out.println("存取Theta失败");
+    	}
+    	if(main.writeStringToFile("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbN" + depth +".txt", sbN.toString(), null)) {
+    		System.out.println("存取N成功");
+    	}
+    	else {
+    		System.out.println("存取N失败");
+    	}
+    	/*
     	System.out.println("*********************************Test*********************************");
     	RealMatrix input_2 = new Array2DRowRealMatrix(input2);
     	int[] y1 = main.Test(input_2.getColumn(0), depth);
@@ -407,5 +377,6 @@ public class Main {
     	int[] y2 = main.Test(input_2.getColumn(1), depth);
     	System.out.println(Arrays.toString(y2));
     	System.out.println(main.hammingDistance(y1, y2));
+    	*/
     }
 }
