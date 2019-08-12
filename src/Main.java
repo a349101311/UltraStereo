@@ -68,7 +68,7 @@ public class Main {
     }//printTreeLineByLine
     
     /*
-     * row:向量维度（121） col:向量个数（310） k:每列非0元素个数
+     * row:向量维度（121） col:向量个数（3100） k:每列非0元素个数
      */
     
     public Parameters[] produceVectorZ(int row , int col , int k){
@@ -97,7 +97,7 @@ public class Main {
     public void trainNode(double[][] input , int numOfRandZ , int candidates , Parameters[] sample , int depth) {
     	list = new ArrayList<Parameters>();
     	listNum = new ArrayList<Integer>();
-    	int[] numRecord = new int[10];
+    	int[] numRecord = new int[candidates];
     	for(int i = 0 ; i < (1 << depth) - 1 ; i++) {
 	    	Parameters[] candidate = new Parameters[candidates];
 	    	Random rand = new Random();
@@ -246,30 +246,8 @@ public class Main {
 
         return list;
     }
-    public static int[] Test(double[] x , int depth) {
-    	int[] y = new int[(1 << depth) - 1];
-    	int i = 1;
-    	RealMatrix input = new Array2DRowRealMatrix(x);
-    	while(depth-- >= 1) {
-    		y[i - 1] = 1;
-    		Parameters node = list.get(i - 1);
-    		RealMatrix z = new Array2DRowRealMatrix(node.arr);
-    		double theta = node.theta;
-    		//System.out.println(input.getColumnMatrix(0).transpose().multiply(z).getEntry(0,0) - theta);
-    		if(input.transpose().multiply(z).getEntry(0,0) - theta >= 0) {
-    			i *= 2;
-    		}
-    		else {
-			if(i == 1) {
-			    y[i - 1] = 0;			
-			}
-    			i = 2 * i + 1;
-    		}
-    	}
-    	return y;
-    }
     
-    public int hammingDistance(int[] y1 , int[] y2) {
+    public static int hammingDistance(int[] y1 , int[] y2) {
     	int num = 0;
     	for(int i = 0 ; i < y1.length ; i++) {
     		if((y1[i] ^ y2[i]) == 1) {
@@ -311,35 +289,35 @@ public class Main {
     public static void main(String[] args) throws IOException {
     	Main main = new Main();
     	List<String> list1 = main.readTxtFileIntoStringArrList("mat/1.txt");
-    	List<String> list2 = main.readTxtFileIntoStringArrList("mat/2.txt");
-    	List<String> list3 = main.readTxtFileIntoStringArrList("mat/3.txt");
-    	List<String> list4 = main.readTxtFileIntoStringArrList("mat/4.txt");
-    	List<String> list5 = main.readTxtFileIntoStringArrList("mat/5.txt");
-    	List<String> list6 = main.readTxtFileIntoStringArrList("mat/6.txt");
+    	//List<String> list2 = main.readTxtFileIntoStringArrList("mat/2.txt");
+    	//List<String> list3 = main.readTxtFileIntoStringArrList("mat/3.txt");
+    	//List<String> list4 = main.readTxtFileIntoStringArrList("mat/4.txt");
+    	//List<String> list5 = main.readTxtFileIntoStringArrList("mat/5.txt");
+    	//List<String> list6 = main.readTxtFileIntoStringArrList("mat/6.txt");
     	double[][] input = new double[121][100];
-    	double[][] input2 = new double[121][100];
-    	double[][] input3 = new double[121][100];
-    	double[][] input4 = new double[121][100];
-    	double[][] input5 = new double[121][100];
-    	double[][] input6 = new double[121][100];
+    	//double[][] input2 = new double[121][100];
+    	//double[][] input3 = new double[121][100];
+    	//double[][] input4 = new double[121][100];
+    	//double[][] input5 = new double[121][100];
+    	//double[][] input6 = new double[121][100];
     	for(int i = 0 ; i < input.length ; i++) {
     		String[] arr = list1.get(i).split("\\s");
-    		String[] arr2 = list2.get(i).split("\\s");
-    		String[] arr3 = list3.get(i).split("\\s");
-    		String[] arr4 = list4.get(i).split("\\s");
-    		String[] arr5 = list5.get(i).split("\\s");
-    		String[] arr6 = list6.get(i).split("\\s");
+    		//String[] arr2 = list2.get(i).split("\\s");
+    		//String[] arr3 = list3.get(i).split("\\s");
+    		//String[] arr4 = list4.get(i).split("\\s");
+    		//String[] arr5 = list5.get(i).split("\\s");
+    		//String[] arr6 = list6.get(i).split("\\s");
      		for(int j = 0 ; j < arr.length ; j++) {
     			input[i][j] = Double.parseDouble(arr[j]);
-    			input2[i][j] = Double.parseDouble(arr2[j]);
-    			input3[i][j] = Double.parseDouble(arr3[j]);
-    			input4[i][j] = Double.parseDouble(arr4[j]);
-    			input5[i][j] = Double.parseDouble(arr5[j]);
-    			input6[i][j] = Double.parseDouble(arr6[j]);
+    			//input2[i][j] = Double.parseDouble(arr2[j]);
+    			//input3[i][j] = Double.parseDouble(arr3[j]);
+    			//input4[i][j] = Double.parseDouble(arr4[j]);
+    			//input5[i][j] = Double.parseDouble(arr5[j]);
+    			//input6[i][j] = Double.parseDouble(arr6[j]);
     		}
     	}
     	System.out.println("训练图像块读取完毕");
-    	int depth = 6,W = 121,numOfRandZ = 310,candidates = 10,k = 4;
+    	int depth = 5,W = 121,numOfRandZ = 3100,candidates = 100,k = 4;
     	Parameters[] sample = main.produceVectorZ(W, numOfRandZ, k);
     	main.trainNode(input,numOfRandZ,candidates,sample,depth);
     	main.buildCompleteTree(depth,list);
