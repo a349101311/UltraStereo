@@ -7,25 +7,25 @@ import org.apache.commons.math3.linear.RealMatrix;
 
 public class Test {
 	public static void main(String[] args) {
-		List<String> listN = Main.readTxtFileIntoStringArrList("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbN7.txt");
-		List<String> listTheta = Main.readTxtFileIntoStringArrList("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbTheta7.txt");
-		List<String> listInput = Main.readTxtFileIntoStringArrList("/home/zhangqi/eclipse-workspace/UltraStereo/mat/WL1.txt");
-		List<String> WRALL = Main.readTxtFileIntoStringArrList("/home/zhangqi/eclipse-workspace/UltraStereo/mat/WRALL.txt");
+		int depth = 5,W = 121,numOfRandZ = 1000,candidates = 50,k = 4;
+		List<String> listN = Main.readTxtFileIntoStringArrList("/home/zhangqi/UltraStereo/UltraStereo/nodePara/sbN" + depth + "_" + numOfRandZ + "_" + candidates + ".txt");
+		List<String> listTheta = Main.readTxtFileIntoStringArrList("/home/zhangqi/UltraStereo/UltraStereo/nodePara/sbTheta" + depth + "_" + numOfRandZ + "_" + candidates + ".txt");
+		List<String> listInput = Main.readTxtFileIntoStringArrList("/home/zhangqi/UltraStereo/UltraStereo/mat/_WL1.txt");
+		List<String> WRALL = Main.readTxtFileIntoStringArrList("/home/zhangqi/UltraStereo/UltraStereo/mat/_WR1.txt");
 		List<Parameters> list = new ArrayList<>();
-		int depth = 7;
 		String[] arrTheta = listTheta.get(0).split("\\s");
 		for(int i = 0 ; i < arrTheta.length ; i++) {
 			String[] arrN = listN.get(i).split("\\s");
 			double[] arr = new double[121];
-			for(int j = 0 ; j < 121 ; j++)
+			for(int j = 0 ; j < W ; j++)
 				arr[j] = Double.parseDouble(arrN[j]);
-			list.add(new Parameters(arr,Double.parseDouble(arrTheta[i])));
+			list.add(new Parameters((arr),Double.parseDouble(arrTheta[i])));
 		}
-		double[] WL1 = new double[121];
+		double[] WL1 = new double[W];
 		for(int i = 0 ; i < listInput.size() ; i++) {
 			WL1[i] = Double.parseDouble(listInput.get(i));
 		}
-		double[][] arrWRALL = new double[121][630];
+		double[][] arrWRALL = new double[W][WRALL.get(0).split("\\s").length];
 		for(int i = 0 ; i < arrWRALL.length ; i++) {
     		String[] arr = WRALL.get(i).split("\\s");
     		for(int j = 0 ; j < arr.length ; j++) {
@@ -38,9 +38,8 @@ public class Test {
 		int index = 0;
 		int distance = 100;
 		List<String> record = new ArrayList<String>();
-		int[] recordD = new int[630];
-		int numOfZero = 0;
-		for(int i = 0 ; i < 630 ; i++) {
+		int[] recordD = new int[arrWRALL[0].length];
+		for(int i = 0 ; i < arrWRALL[0].length ; i++) {
 			double[] tmp = rmWRALL.getRow(i);
 			int[] tmpY = Test2(tmp , depth , list);
 			record.add(Arrays.toString(tmpY));
@@ -50,12 +49,18 @@ public class Test {
 				distance = tmpD;
 				index = i;
 			}
-			if(tmpD == 3) {
-				numOfZero++;
+			
+		}
+		System.out.println("match patch : " + index + " ,  hamming : " + distance);
+		System.out.println("total index :");
+		for(int i = 0 ; i < recordD.length ; i++) {
+			if(recordD[i] == distance) {
+				System.out.print(i + " ,");
 			}
 		}
-		System.out.println(index + " , " + distance);
-		System.out.println(numOfZero);
+		System.out.println();
+		System.out.println("WL's Encoding : ");
+		System.out.println(Arrays.toString(y_WL1));
 	}
 	
 	/*
@@ -95,9 +100,14 @@ public class Test {
 		RealMatrix input = new Array2DRowRealMatrix(x);
 		for(int i = 0 ; i < y.length ; i++) {
 			Parameters node = list.get(i);
-			RealMatrix z = new Array2DRowRealMatrix(node.arr);
+			double t = 0;
+			for(int j = 0 ; j < x.length ; j++)
+	    		if(node.arr[j] != 0)
+	    			t += x[j];
+			RealMatrix rm1 = new Array2DRowRealMatrix(node.arr);
     		double theta = node.theta;
-    		if(input.transpose().multiply(z).getEntry(0,0) - theta >= 0)
+    		//System.out.println(input.transpose().multiply(rm1).getEntry(0, 0) + "*****" + theta * t);
+    		if(input.transpose().multiply(rm1).getEntry(0, 0) - theta * t >= 0)
     			y[i] = 1;
     		else
     			y[i] = 0;

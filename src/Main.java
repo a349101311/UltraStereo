@@ -68,23 +68,23 @@ public class Main {
     }//printTreeLineByLine
     
     /*
-     * row:向量维度（121） col:向量个数（3100） k:每列非0元素个数
+     * row:向量维度（121） col:向量个数（1000） k:每列非0元素个数
      */
     
     public Parameters[] produceVectorZ(int row , int col , int k){
     	Parameters[] ret = new Parameters[col];
     	Random rand = new Random();
-    	
     	for(int j = 0 ; j < col ; j++) {
+    		double sum = 0;
     		int num = k;
     		double[] x = new double[row];
     		while(num-- > 0) {
     			int ele = rand.nextInt(row - 1);
-    			x[ele] = rand.nextInt(100) + 1; // 1 ~ 100
-    			//System.out.print(" " + ele + "," + x[ele]);
+    			x[ele] = rand.nextDouble();
+    			sum+=x[ele];
     		}
-    		int theta = rand.nextInt(12800) + 12800;
-    		//System.out.println(" " + theta);
+    		double theta = sum / (4 + 1 - rand.nextDouble() * 2);
+    		//System.out.println(theta + " , " + sum);
     		ret[j] = new Parameters(x,theta);
     	}
     	System.out.println("总共的随机向量z以及theta产生完毕");
@@ -119,6 +119,7 @@ public class Main {
 	    	}
 	    	listNum.add(numRecord[index]);
 	    	list.add(candidate[index]);
+	    	//System.out.println(listNum.toString());
 	    	//System.out.println("训练节点"+i+"结束");
     	}
     }
@@ -127,15 +128,24 @@ public class Main {
     	int Sl = 0 , Sr = 0 , S = input[0].length;
     	List<Integer> list = new ArrayList<>();
     	RealMatrix rm1 = new Array2DRowRealMatrix(input);
+    	double[] arr1 = new double[input.length];
+    	for(int i = 0 ; i < arr1.length ; i++)
+    		if(para.arr[i] != 0)
+    			arr1[i] = 1;
+    	RealMatrix one = new Array2DRowRealMatrix(arr1);
     	for(int j = 0 ; j < input[0].length; j++) {
     		RealMatrix z = new Array2DRowRealMatrix(para.arr);
-    		if(z.transpose().multiply(rm1.getColumnMatrix(j)).getEntry(0, 0) - para.theta >= 0) {
+    		double tmp = z.transpose().multiply(rm1.getColumnMatrix(j)).getEntry(0, 0);
+    		//System.out.println(tmp - para.theta);
+    		double x = one.transpose().multiply(rm1.getColumnMatrix(j)).getEntry(0, 0) / 4;
+    		if(tmp - para.theta * x  * 4 >= 0) {
     			Sl++;
     			list.add(j);
     		}
     		else
     			Sr++;
     	}
+    	//System.out.println(Sl + " , " + Sr);
     	if(Sl <=1 || Sr <= 1)
     		return 0;
     	double[][] arrl = new double[input.length][Sl];
@@ -288,13 +298,13 @@ public class Main {
     }
     public static void main(String[] args) throws IOException {
     	Main main = new Main();
-    	List<String> list1 = main.readTxtFileIntoStringArrList("mat/1.txt");
+    	List<String> list1 = Main.readTxtFileIntoStringArrList("mat/1.txt");
     	//List<String> list2 = main.readTxtFileIntoStringArrList("mat/2.txt");
     	//List<String> list3 = main.readTxtFileIntoStringArrList("mat/3.txt");
     	//List<String> list4 = main.readTxtFileIntoStringArrList("mat/4.txt");
     	//List<String> list5 = main.readTxtFileIntoStringArrList("mat/5.txt");
     	//List<String> list6 = main.readTxtFileIntoStringArrList("mat/6.txt");
-    	double[][] input = new double[121][100];
+    	double[][] input = new double[121][list1.get(0).split("\\s").length];
     	//double[][] input2 = new double[121][100];
     	//double[][] input3 = new double[121][100];
     	//double[][] input4 = new double[121][100];
@@ -317,7 +327,7 @@ public class Main {
     		}
     	}
     	System.out.println("训练图像块读取完毕");
-    	int depth = 5,W = 121,numOfRandZ = 3100,candidates = 100,k = 4;
+    	int depth = 5,W = 121,numOfRandZ = 1000,candidates = 50,k = 4;
     	Parameters[] sample = main.produceVectorZ(W, numOfRandZ, k);
     	main.trainNode(input,numOfRandZ,candidates,sample,depth);
     	main.buildCompleteTree(depth,list);
@@ -335,13 +345,14 @@ public class Main {
     		}
     		sbN.append(tmp[W - 1] + "\n");
     	}
-    	if(main.writeStringToFile("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbTheta" + depth + ".txt", sbTheta.toString(), null)) {
+    	
+    	if(Main.writeStringToFile("/home/zhangqi/UltraStereo/UltraStereo/nodePara/sbTheta" + depth + "_" + numOfRandZ + "_" + candidates + ".txt", sbTheta.toString(), null)) {
     		System.out.println("存取Theta成功");
     	}
     	else {
     		System.out.println("存取Theta失败");
     	}
-    	if(main.writeStringToFile("/home/zhangqi/eclipse-workspace/UltraStereo/nodePara/sbN" + depth +".txt", sbN.toString(), null)) {
+    	if(Main.writeStringToFile("/home/zhangqi/UltraStereo/UltraStereo/nodePara/sbN" + depth + "_" + numOfRandZ + "_" + candidates + ".txt", sbN.toString(), null)) {
     		System.out.println("存取N成功");
     	}
     	else {
