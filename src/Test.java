@@ -42,6 +42,7 @@ public class Test {
 		for(int i = 0 ; i < arrWRALL[0].length ; i++) {
 			double[] tmp = rmWRALL.getRow(i);
 			int[] tmpY = Test2(tmp , depth , list);
+			System.out.println(Arrays.toString(tmpY));
 			record.add(Arrays.toString(tmpY));
 			int tmpD = Main.hammingDistance(y_WL1, tmpY);
 			recordD[i] = tmpD;
@@ -111,6 +112,7 @@ public class Test {
     			y[i] = 1;
     		else
     			y[i] = 0;
+    		
 		}
 		return y;
 	}
